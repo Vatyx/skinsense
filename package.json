@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/Vatyx/skinsense/issues"
   },
-  "homepage": "https://github.com/Vatyx/skinsense#readme"
+  "homepage": "https://github.com/Vatyx/skinsense#readme",
+  "dependencies": {
+    "bluetooth-serial-port": "^1.3.1"
+  }
 }
