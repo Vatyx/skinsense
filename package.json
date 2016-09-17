@@ -1,0 +1,19 @@
+{
+  "name": "skinsense",
+  "version": "1.0.0",
+  "description": "Oh shit skin touching stuff",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Vatyx/skinsense.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Vatyx/skinsense/issues"
+  },
+  "homepage": "https://github.com/Vatyx/skinsense#readme"
+}
