@@ -41,7 +41,7 @@ void setup() {
 
   // bind pin 2 as input
   pinMode(2, INPUT);
-
+  pinMode(7, INPUT);
   // interrupt for reading from the bluetooth connection
   attachInterrupt(0, cleantime, FALLING);
   init_timer2();
@@ -49,11 +49,15 @@ void setup() {
 
 // function for controlling the led
 void control(void) {
-  Serial.print("[");
-  Serial.print(analogRead(A0));
-  Serial.print(", ");
-  Serial.print(analogRead(A0));
-  Serial.println("]");
+  if (digitalRead(2) == HIGH) {
+    Serial.println("Z");
+  } else {
+    Serial.print("[");
+    Serial.print(analogRead(A0));
+    Serial.print(", ");
+    Serial.print(analogRead(A2));
+    Serial.println("]");
+  }
 }
 
 // control loop for the program
