@@ -10,13 +10,29 @@ function modeHandler(mode, action) {
 			audioHandler(action);
 			break;
 		case 'video':
-			console.log('Video');
+			videoHandler(action);
 			break;
 		case 'game':
 			arrowsHandler(action);
 			break;
 		default:
 			console.error('Unhandled mode case');
+	}
+}
+
+function videoHandler(action) {
+	switch (action) {
+		case 'tap': // Toggle playing of video
+			robot.keyTap('k');
+			break;
+		case 'slide-up':
+			robot.keyTap('right');
+			break;
+		case 'slide-down':
+			robot.keyTap('left');
+			break;
+		default:
+			console.error('Unhandled video action');
 	}
 }
 
