@@ -1,9 +1,5 @@
-const BLUETOOTH = false;
-
-if (BLUETOOTH) {
-  var bluetoothAddress = '20-16-05-25-41-99';
-  var btSerial = new (require('bluetooth-serial-port')).BluetoothSerialPort();
-}
+var bluetoothAddress = '20-16-05-25-41-99';
+var btSerial = new (require('bluetooth-serial-port')).BluetoothSerialPort();
 
 var SerialPort = require('serialport');
 var port = new SerialPort('/dev/cu.usbmodem1421');
@@ -123,87 +119,64 @@ function changeState() {
 
 var rawSerialString = '';
 var currentMode = 0;
-// btSerial.on('found', function(address, name) {
-//   if(address === bluetoothAddress) {
-//     process.stdout.write('Arduino found, connecting... ');
-//     btSerial.findSerialPortChannel(address, function(channel) {
-//         btSerial.connect(address, channel, function() {
-//             console.log('Done!');
-//
-//             btSerial.write(new Buffer('my data', 'utf-8'), function(err, bytesWritten) {
-//                 if (err) console.log(err);
-//             });
-//
-//             btSerial.on('data', function(buffer) {
-//                 rawSerialString += buffer.toString('utf-8');
-//
-//                 if (!rawSerialString.includes(']')) {
-//                   return;
-//                 }
-//
-//                 var rawData;
-//                 try {
-//                   rawData = JSON.parse(rawSerialString);
-//                   //console.log(rawData[0]);
-//
-//                   rawRolling1.push(rawData[0]);
-//                   rawRolling1.shift();
-//
-//                   checkTap();
-//                 } catch (e) {
-//                   rawSerialString = '';
-//                    //console.log('TRANSMISSION ERROR');
-//                 }
-//             });
-//         }, function () {
-//             console.log('Connection Error Type 1');
-//         });
-//
-//         // close the connection when you're ready
-//         btSerial.close();
-//     }, function() {
-//         console.log('Connection Error Type 2');
-//     });
-//   }
-// });
-//
-// btSerial.inquire();
+btSerial.on('found', function(address, name) {
+  if(address === bluetoothAddress) {
+    process.stdout.write('Arduino found, connecting... ');
+    btSerial.findSerialPortChannel(address, function(channel) {
+        btSerial.connect(address, channel, function() {
+            console.log('Done!');
 
-port.on('data', function (data) {
+            btSerial.write(new Buffer('my data', 'utf-8'), function(err, bytesWritten) {
+                if (err) console.log(err);
+            });
 
-  rawSerialString += data.toString('utf-8');
+            btSerial.on('data', function(data) {
+              rawSerialString += data.toString('utf-8');
 
-  if (!rawSerialString.includes(']')) {
-    return;
-  }
+              if (!rawSerialString.includes(']')) {
+                return;
+              }
 
-  if (rawSerialString.includes('Z')) {
-    rawSerialString = '';
-    (currentMode++) % 3;
-    switch (currentMode) {
-      case 0:
-        mode = 'audio';
-        break;
-      case 1:
-        mode = 'video';
-        break;
-      case 2:
-        mode = 'game'
-        break;
-    }
-    return;
-  }
+              if (rawSerialString.includes('Z')) {
+                rawSerialString = '';
+                (currentMode++) % 3;
+                switch (currentMode) {
+                  case 0:
+                    mode = 'audio';
+                    break;
+                  case 1:
+                    mode = 'video';
+                    break;
+                  case 2:
+                    mode = 'game'
+                    break;
+                }
+                return;
+              }
 
-  try {
-    var rawData = JSON.parse(rawSerialString);
+              try {
+                var rawData = JSON.parse(rawSerialString);
 
-    rawRolling1.push(rawData[0]);
-    rawRolling1.shift();
+                rawRolling1.push(rawData[0]);
+                rawRolling1.shift();
 
-    checkTap();
-  } catch (e) {
-    // console.log("ERROR:", rawSerialString)
-    rawSerialString = '';
-    //console.log('TRANSMISSION ERROR');
+                checkTap();
+              } catch (e) {
+                // console.log("ERROR:", rawSerialString)
+                rawSerialString = '';
+                //console.log('TRANSMISSION ERROR');
+              }
+            });
+        }, function () {
+            console.log('Connection Error Type 1');
+        });
+
+        // close the connection when you're ready
+        btSerial.close();
+    }, function() {
+        console.log('Connection Error Type 2');
+    });
   }
 });
+
+btSerial.inquire();
