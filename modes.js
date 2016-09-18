@@ -22,6 +22,9 @@ function modeHandler(mode, action) {
 
 function arrowsHandler(action) {
 	switch (action) {
+		case 'tap':
+			robot.keyTap('space');
+			break;
 		case 'flick-up':
 			robot.keyTap('up');
 			break;
