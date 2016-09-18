@@ -1,20 +1,40 @@
-bluetoothAddress = '20-16-05-25-41-99';
+var SerialPort = require('serialport');
+var port = new SerialPort('/dev/cu.usbmodem1421');
 
-var btSerial = new (require('bluetooth-serial-port')).BluetoothSerialPort();
+port.on('open', function() {
+  console.log('OPENED')
+});
+
+// open errors will be emitted as an error event
+port.on('error', function(err) {
+  console.log('Error: ', err.message);
+})
+
+var modeHandler = require('./modes').modeHandler;
+
+const functionBestFit = '-600+(19169 x)/30+(30433 x^2)/360-(1751 x^3)/16+(4009 x^4)/144-(727 x^5)/240+(89 x^6)/720';
+
+function convertToJs(z, x){
+  z = z.replace(/ x/g, '*x');
+  z = z.replace(/x\^(\d*)/g, "Math.pow(x, $1)");
+  z = z.replace(/x/g, x);
+  return z;
+}
 
 // all times in ms
 const REFRESHRATE = 20;
 const TRIGGERVAL = 1000;
 const TAPTRIGGERTIME = 500;
 const IGNORETIME = 100;
-const BUFFERTIME = 2000;
+const BUFFERTIME = 1000;
 
 var rawRolling1 = Array(BUFFERTIME/REFRESHRATE).fill(1023);
 var rawRolling2 = Array(BUFFERTIME/REFRESHRATE).fill(1023);
 
 var counter = 0;
-var maxCounter = 20;
+var maxCounter = 15;
 var under = false;
+var volumeCounter = 0;
 var drag = true;
 
 function checkTap() {
@@ -23,11 +43,13 @@ function checkTap() {
   console.log(currentValue, counter)
   if(currentValue > TRIGGERVAL && under === false) {
     console.log("Nothing");
+    drag = false
     return; //nothing is happening
   }
 
   if(currentValue > TRIGGERVAL && under === true && counter < maxCounter) {
     console.log("!!!!!!!This is a click~~~~~");
+    modeHandler("audio", "toggle-play");
     under = false;
     counter = 0;
     return;
@@ -35,9 +57,19 @@ function checkTap() {
 
   if(currentValue < TRIGGERVAL && drag === true) {
     if(currentValue - pastValue < 0) {
-      console.log("up");
+      if(volumeCounter % 3 === 0) {
+        console.log("up");
+        modeHandler("audio", "volume-up");
+      } else {
+        volumeCounter++;
+      }
     } else if(currentValue - pastValue > 0) {
-      console.log("down");
+      if(volumeCounter % 3 === 0) {
+        console.log("down");
+        modeHandler("audio", "volume-down");
+      } else {
+        volumeCounter++;
+      }
     }
   }
 
@@ -72,48 +104,24 @@ function checkTap() {
 }
 
 var rawSerialString = '';
-btSerial.on('found', function(address, name) {
-  if(address === bluetoothAddress) {
-    process.stdout.write('Arduino found, connecting... ');
-    btSerial.findSerialPortChannel(address, function(channel) {
-        btSerial.connect(address, channel, function() {
-            console.log('Done!');
+port.on('data', function (data) {
 
-            btSerial.write(new Buffer('my data', 'utf-8'), function(err, bytesWritten) {
-                if (err) console.log(err);
-            });
+  rawSerialString += data.toString('utf-8');
 
-            btSerial.on('data', function(buffer) {
-                rawSerialString += buffer.toString('utf-8');
+  if (!rawSerialString.includes(']')) {
+    return;
+  }
 
-                if (!rawSerialString.includes(']')) {
-                  return;
-                }
+  try {
+    var rawData = JSON.parse(rawSerialString);
 
-                var rawData;
-                try {
-                  rawData = JSON.parse(rawSerialString);
-                  //console.log(rawData[0]);
+    rawRolling1.push(rawData[0]);
+    rawRolling1.shift();
 
-                  rawRolling1.push(rawData[0]);
-                  rawRolling1.shift();
-
-                  checkTap();
-                } catch (e) {
-                  rawSerialString = '';
-                   //console.log('TRANSMISSION ERROR');
-                }
-            });
-        }, function () {
-            console.log('Connection Error Type 1');
-        });
-
-        // close the connection when you're ready
-        btSerial.close();
-    }, function() {
-        console.log('Connection Error Type 2');
-    });
+    checkTap();
+  } catch (e) {
+    // console.log("ERROR:", rawSerialString)
+    rawSerialString = '';
+    //console.log('TRANSMISSION ERROR');
   }
 });
-
-btSerial.inquire();

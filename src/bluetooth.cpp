@@ -49,9 +49,10 @@ void setup() {
 
 // function for controlling the led
 void control(void) {
-  int sensor1 = analogRead(A0);
   Serial.print("[");
-  Serial.print(sensor1);
+  Serial.print(analogRead(A0));
+  Serial.print(", ");
+  Serial.print(analogRead(A0));
   Serial.println("]");
 }
 
