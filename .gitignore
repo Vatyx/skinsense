@@ -2,4 +2,8 @@
 .clang_complete
 .gcc-flags.json
 node_modules/
+<<<<<<< HEAD
 .piolibdeps
+=======
+*.sw*
+>>>>>>> 5d94a3e20947bac07377e4fa611b9e33acb88dde
